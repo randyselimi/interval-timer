@@ -1,23 +1,27 @@
 <script lang="ts">
+	import type { ITimer } from '$lib/timer/timer';
 	import { onMount } from 'svelte';
-    import {NodeTimer, type Timer, type TimerState} from '../timer/timer';
-    export let duration = 0;
-    export let name = "";
-    export let sound = "";
-
+    export let timer : ITimer;
+    timer.onfinish.push(onFinish);
     let audio : HTMLAudioElement; 
-    let timer : Timer = new NodeTimer({duration : duration, elapsed : 0, running : false, finished : false})
-    timer.onfinish = onFinish;
 
-    function onFinish() {
-        audio.play();
-        timer.restart();
+    export function start() {
+        timer.start();
     }
-    function toggle() {
+    export function stop() {
+        timer.stop();
+    }
+    export function toggle() {
         timer.toggle();
     }
-    function reset() {
+    export function reset() {
         timer.reset();
+    }
+    export function restart() {
+        timer.restart();
+    }
+    function onFinish() {
+        audio.play();
     }
 
     onMount(() => {
@@ -33,7 +37,7 @@
 
 </script>
 
-<h3> {name} </h3>
+<h3> {timer.props.name} </h3>
 <p>Duration: {timer.state.duration}</p>
 <p>Elapsed: {timer.state.elapsed}</p>
 <p>Running: {timer.state.running}</p>
@@ -52,4 +56,4 @@
     Reset
 </button>
 
-<audio src={sound} bind:this={audio}></audio>
+<audio src={timer.props.sound} bind:this={audio}></audio>

@@ -5,26 +5,35 @@ export interface TimerState {
     finished : boolean,
 }
 
-export interface Timer {
+export interface TimerProps {
+    name : string,
+    sound : string,
+    x : number,
+    y : number,
+}
+
+export interface ITimer {
     state : TimerState;
+    props : TimerProps;
     start() : void;
     stop() : void;
     toggle() : void;
     reset() : void;
     restart() : void;
-    onfinish : (() => void) | undefined
+    onfinish : (() => void)[] 
 }
 
-export class NodeTimer implements Timer {
+export class NodeTimer implements ITimer {
     state : TimerState;
+    props : TimerProps;
     private timer : NodeJS.Timer | undefined = undefined
     
-    constructor(state : TimerState) {
-        this.state = state
-        console.log('here')
+    constructor({duration = 0, elapsed = 0, running = false, finished = false} : TimerState, {name="", sound ="", x=0, y=0} : TimerProps) {
+        this.state = {duration: duration, elapsed: elapsed, running: running, finished: finished}
+        this.props = {name: name, sound: sound, x: x, y:y}
     }
     start() {
-        if (this.state.finished) {
+        if (this.state.running || this.state.finished) {
             return;
         }
  
@@ -32,7 +41,7 @@ export class NodeTimer implements Timer {
         this.timer = setInterval(() => this.handleTick(), 100)  
     }
     stop() {
-        if (this.state.finished || !this.timer) {
+        if (!this.timer || this.state.finished) {
             return;
         }
         this.state.running = false;
@@ -51,16 +60,14 @@ export class NodeTimer implements Timer {
         this.reset();
         this.start();
     }
-    onfinish: (() => void) | undefined = undefined;
+    onfinish: (() => void)[] = [];
     private handleTick() {
         this.state.elapsed += 100;
         //finish logic
         if (this.state.elapsed >= this.state.duration) {
             this.stop();
             this.state.finished = true;
-            if (this.onfinish != undefined) {
-                this.onfinish();
-            }
+            this.onfinish.forEach((callback) => callback())      
         }
     }
 }
