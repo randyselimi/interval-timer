@@ -1,72 +1,92 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-    import Timer from './timer.svelte'
-    import {TimerController, type TimerData} from '../timer/timer-controller';
-	import CreateTimer from './create-timer.svelte';
+  import { onMount } from 'svelte';
+  import Timer from './timer.svelte';
+  import { TimerController, type TimerData } from '../timer/timer-controller';
+  import CreateTimer from './create-timer.svelte';
+  import { type ITimer, WorkerTimer } from '$lib/timer/timer';
 
-    let timerData : TimerData[] = 
-    
-    [{state: {duration: 1000, elapsed: 0, running: false, finished: false}, props: {name: "One Second", sound: "3718__noisecollector__909-clap.wav", x: 0, y: 0}},
-    {state: {duration: 3000, elapsed: 0, running: false, finished: false}, props: {name: "Three Seconds", sound: "3719__noisecollector__909-hat-open.wav", x: 0, y: 1}},
-    {state: {duration: 5000, elapsed: 0, running: false, finished: false}, props: {name: "Five Seconds", sound: "3723__noisecollector__909-kick-long.wav", x: 0, y: 2}},
-    {state: {duration: 7500, elapsed: 0, running: false, finished: false}, props: {name: "Seven-Point-Five Seconds", sound: "3728__noisecollector__909-snare2.wav", x: 1, y: 0}},
-    {state: {duration: 1000, elapsed: 0, running: false, finished: false}, props: {name: "One Second II", sound: "3725__noisecollector__909-kick2.wav", x: 1, y: 1}},
-    {state: {duration: 1000, elapsed: 0, running: false, finished: false}, props: {name: "One Second III", sound: "3726__noisecollector__909-kick3.wav", x: 2, y: 1}},]
-    let controller : TimerController = new TimerController(timerData);
-    console.log(controller)
-    $: rows = controller.grid.getRows();
+  let timerData: TimerData[] = [
+    {
+      state: { duration: 1000, elapsed: 0, running: false, finished: false },
+      props: { name: 'One Second', sound: '3718__noisecollector__909-clap.wav', x: 0, y: 0 }
+    },
+    {
+      state: { duration: 3000, elapsed: 0, running: false, finished: false },
+      props: { name: 'Three Seconds', sound: '3719__noisecollector__909-hat-open.wav', x: 0, y: 1 }
+    },
+    {
+      state: { duration: 5000, elapsed: 0, running: false, finished: false },
+      props: { name: 'Five Seconds', sound: '3723__noisecollector__909-kick-long.wav', x: 0, y: 2 }
+    },
+    {
+      state: { duration: 7500, elapsed: 0, running: false, finished: false },
+      props: {
+        name: 'Seven-Point-Five Seconds',
+        sound: '3728__noisecollector__909-snare2.wav',
+        x: 1,
+        y: 0
+      }
+    },
+    {
+      state: { duration: 1000, elapsed: 0, running: false, finished: false },
+      props: { name: 'One Second II', sound: '3725__noisecollector__909-kick2.wav', x: 1, y: 1 }
+    },
+    {
+      state: { duration: 1000, elapsed: 0, running: false, finished: false },
+      props: { name: 'One Second III', sound: '3726__noisecollector__909-kick3.wav', x: 2, y: 1 }
+    }
+  ];
+  let controller: TimerController = new TimerController();
+  $: rows = controller.grid.getRows();
 
-    function start() {
-        controller.start();
-    }
-    function stop() {
-        controller.stop();
-    }
-    function reset() {
-        controller.reset();
-    }
+  function start() {
+    controller.start();
+  }
+  function stop() {
+    controller.stop();
+  }
+  function reset() {
+    controller.reset();
+  }
 
-    onMount(() => {
-        const tick = setInterval(() => {
-            controller = controller;
-        }, 100)
-        return () => {
-            clearInterval(tick);
-            controller.stop();
-        }
-    })
+  onMount(() => {
+    for (const data of timerData) {
+      const worker = new Worker(new URL('$lib/timer/timer.worker.ts', import.meta.url), {
+        type: 'module'
+      });
+      const timer = new WorkerTimer(data.state, data.props, worker);
+      controller.add(timer);
+    }
+    const tick = setInterval(() => {
+      controller = controller;
+    }, 100);
+    return () => {
+      clearInterval(tick);
+      controller.stop();
+    };
+  });
 </script>
 
 {#if !controller.running}
-<button on:click={start}>
-    Play
-</button>
+  <button on:click={start}> Play </button>
 {:else}
-<button on:click={stop}>
-    Pause
-</button>
+  <button on:click={stop}> Pause </button>
 {/if}
-<button on:click={reset}>
-    Reset
-</button>
+<button on:click={reset}> Reset </button>
 {#each rows as row}
-    <div class="row">
-        {#each row.get() as timer}
-            <div>
-                <Timer timer={timer}></Timer>
-            </div>
-        {/each}
-        <CreateTimer></CreateTimer>
-    </div>
-
+  <div class="row">
+    {#each row.get() as timer}
+      <div>
+        <Timer {timer} />
+      </div>
+    {/each}
+    <CreateTimer />
+  </div>
 {/each}
-<CreateTimer></CreateTimer>
-
+<CreateTimer />
 
 <style>
-    .row {
-  display: flex;
-}
-
+  .row {
+    display: flex;
+  }
 </style>
-
