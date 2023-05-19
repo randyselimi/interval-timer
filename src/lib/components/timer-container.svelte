@@ -1,55 +1,27 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import Timer from './timer.svelte';
+  import TimerControls from './timer-controls.svelte';
   import { TimerController, type TimerData } from '../timer/timer-controller';
-  import CreateTimer from './create-timer.svelte';
-  import { type ITimer, WorkerTimer } from '$lib/timer/timer';
+  import { WorkerTimer } from '$lib/timer/timer';
+  import TimerGrid from './timer-grid.svelte';
 
-  let timerData: TimerData[] = [
-    {
-      state: { duration: 1000, elapsed: 0, running: false, finished: false },
-      props: { name: 'One Second', sound: '3718__noisecollector__909-clap.wav', x: 0, y: 0 }
-    },
-    {
-      state: { duration: 3000, elapsed: 0, running: false, finished: false },
-      props: { name: 'Three Seconds', sound: '3719__noisecollector__909-hat-open.wav', x: 0, y: 1 }
-    },
-    {
-      state: { duration: 5000, elapsed: 0, running: false, finished: false },
-      props: { name: 'Five Seconds', sound: '3723__noisecollector__909-kick-long.wav', x: 0, y: 2 }
-    },
-    {
-      state: { duration: 7500, elapsed: 0, running: false, finished: false },
-      props: {
-        name: 'Seven-Point-Five Seconds',
-        sound: '3728__noisecollector__909-snare2.wav',
-        x: 1,
-        y: 0
-      }
-    },
-    {
-      state: { duration: 1000, elapsed: 0, running: false, finished: false },
-      props: { name: 'One Second II', sound: '3725__noisecollector__909-kick2.wav', x: 1, y: 1 }
-    },
-    {
-      state: { duration: 1000, elapsed: 0, running: false, finished: false },
-      props: { name: 'One Second III', sound: '3726__noisecollector__909-kick3.wav', x: 2, y: 1 }
-    }
-  ];
   let controller: TimerController = new TimerController();
   $: rows = controller.grid.getRows();
+  $: running = controller.running;
 
-  function start() {
+  function handleStart() {
     controller.start();
   }
-  function stop() {
+  function handleStop() {
     controller.stop();
   }
-  function reset() {
+  function handleReset() {
     controller.reset();
   }
 
-  onMount(() => {
+  onMount(async () => {
+    const response = await fetch('timer-test-data.json');
+    const timerData = await response.json();
     for (const data of timerData) {
       const worker = new Worker(new URL('$lib/timer/timer.worker.ts', import.meta.url), {
         type: 'module'
@@ -58,6 +30,7 @@
       controller.add(timer);
     }
     const tick = setInterval(() => {
+      console.log(running);
       controller = controller;
     }, 100);
     return () => {
@@ -67,26 +40,5 @@
   });
 </script>
 
-{#if !controller.running}
-  <button on:click={start}> Play </button>
-{:else}
-  <button on:click={stop}> Pause </button>
-{/if}
-<button on:click={reset}> Reset </button>
-{#each rows as row}
-  <div class="row">
-    {#each row.get() as timer}
-      <div>
-        <Timer {timer} />
-      </div>
-    {/each}
-    <CreateTimer />
-  </div>
-{/each}
-<CreateTimer />
-
-<style>
-  .row {
-    display: flex;
-  }
-</style>
+<TimerControls {running} on:start={handleStart} on:stop={handleStop} on:reset={handleReset} />
+<TimerGrid {rows} />

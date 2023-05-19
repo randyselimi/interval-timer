@@ -1,6 +1,6 @@
 import type { ITimer } from './timer';
 
-class TimerRow {
+export class TimerRow {
   private timers: ITimer[] = [];
 
   start() {
