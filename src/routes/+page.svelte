@@ -1,5 +1,6 @@
-<script lang="ts">
-    import TimerContainer from "../lib/components/timer-container.svelte";
+<script>
+  import TileContainer from '$lib/components/tile-container.svelte';
+  export let data;
 </script>
 
-<TimerContainer></TimerContainer>
+<TileContainer {data} />

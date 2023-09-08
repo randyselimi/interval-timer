@@ -13,6 +13,9 @@
   function reset() {
     dispatch('reset');
   }
+  function restart() {
+    dispatch('restart');
+  }
 </script>
 
 {#if !running}
@@ -21,3 +24,4 @@
   <button on:click={stop}> Pause </button>
 {/if}
 <button on:click={reset}> Reset </button>
+<button on:click={restart}> Reset </button>
