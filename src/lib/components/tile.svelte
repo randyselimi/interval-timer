@@ -6,13 +6,18 @@
   tile.onFinish.push(finish);
 
   function finish() {
-    audio.play();
+    if (tile.sound === 'tts') {
+      var msg = new SpeechSynthesisUtterance(tile.name);
+      window.speechSynthesis.speak(msg);
+    } else {
+      audio.play();
+    }
   }
 
   onMount(() => {
     const tick = setInterval(() => {
       tile = tile;
-    }, 10);
+    }, 100);
 
     return () => {
       tile.stop();

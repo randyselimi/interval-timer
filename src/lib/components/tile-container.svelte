@@ -62,7 +62,7 @@
     }
     const tick = setInterval(() => {
       controller = controller;
-    }, 10);
+    }, 100);
     return () => {
       controller.stop();
       clearInterval(tick);

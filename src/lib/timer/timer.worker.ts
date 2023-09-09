@@ -10,7 +10,7 @@ onmessage = ({ data: { message } }: MessageEvent) => {
 
 let timer: NodeJS.Timeout | undefined = undefined;
 
-const startTimer = () => (timer = setInterval(() => postMessage({}), 10));
+const startTimer = () => (timer = setInterval(() => postMessage({}), 100));
 
 const stopTimer = () => {
   if (!timer) {

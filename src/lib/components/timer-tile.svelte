@@ -20,7 +20,7 @@
   onMount(() => {
     const tick = setInterval(() => {
       timerTile = timerTile;
-    }, 10);
+    }, 100);
 
     return () => {
       clearInterval(tick);

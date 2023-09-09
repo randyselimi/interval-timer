@@ -28,7 +28,7 @@ export class WorkerTimer extends Timer {
     this.elapsed = 0;
   }
   protected handleTick() {
-    this.elapsed += 10;
+    this.elapsed += 100;
     if (this.elapsed >= this.duration) {
       this.finish();
     }
